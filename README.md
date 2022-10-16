@@ -21,6 +21,7 @@ For pre-processing steps the image data is standardized and transformed from rgb
 After this pre-processing tha image data is the following (16 random examples):
 ![Figure_1](https://user-images.githubusercontent.com/55351724/196028202-ec6aa65f-a222-4e9f-bd54-cd7ec1e13194.png)
 
+False meaning the brain is not healthy and True meaning the brain is healthy
 
 ## Modelling
 
