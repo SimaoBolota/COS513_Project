@@ -97,23 +97,29 @@ print('\nHealthy pics count:')
 print(healthy_count)
 print('\nTumour pics count')
 print(tumour_count)
+
+
+plot_labels = ['Healthy', 'Tumour']
+plot_count = [healthy_count, tumour_count]
+  
+fig = plt.figure(figsize = (10, 5))
+ 
+plt.bar(plot_labels, plot_count, color ='blue',
+        width = 0.4)
+ 
+plt.xlabel("Brain Status")
+plt.ylabel("No. of brain MRI images")
+plt.title("Brain MRI images count comparison")
+plt.show()
     
-
-num_test_images = round(X_Data.shape[0] * 0.2)
-num_train_images =  X_Data.shape[0] - num_test_images
-
-
 ######################## DIVIDE DATA
 
 # IS THE BRAIN HEALTHY
 #FALSE - tumor - 0
 #TRUE - no tumor - 1
 
-# idx = np.arange(X_Data.shape[0])
-# np.random.shuffle(idx)
-# X_Data = X_Data[idx]
-# Y_Data = Y_Data[idx]
-# x_train, x_test, y_train, y_test = train_test_split(X_Data, Y_Data, test_size = 0.2, random_state = 101)
+num_test_images = round(X_Data.shape[0] * 0.2)
+num_train_images =  X_Data.shape[0] - num_test_images
 
 x_train = X_Data[:num_train_images] #find better way do divide data
 y_train = Y_Data[:num_train_images] #find better way do divide data
@@ -136,11 +142,11 @@ def plot_multi(i):
     for j in range(nplots):
         plt.subplot(4,4,j+1)
         plt.imshow(X_Data[i+j], cmap='binary')
-        plt.title(Y_Data[i+j])
+        # plt.title(Y_Data[i+j])
         plt.axis('off')
     plt.show()
 
-# plot_multi(14)
+plot_multi(190)
 
 ######################## BUILDING MODEL
 from keras import backend as K
@@ -180,13 +186,12 @@ model.add(layers.Flatten())
 
 model.add(layers.Dense(10, activation='softmax'))
 
-# as metric we choose the accuracy: the total number of correct predictions made
 model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
               loss=tf.keras.losses.SparseCategoricalCrossentropy(),
               metrics=['accuracy', metrics.categorical_accuracy, metrics.mean_absolute_error,f1_score ])
 
 
-
+model.summary()
 ######################## TRAINING
 
 validation_data_ = (x_test, y_test)
@@ -204,22 +209,66 @@ plt.ylabel('Accuracy')
 plt.legend(loc='lower right')
 plt.show()
 
+
+plt.plot(history.history['mean_absolute_error'], label='mean_absolute_error')
+plt.xlabel('Epoch')
+plt.ylabel('mean_absolute_error')
+plt.legend(loc='upper right')
+plt.show()
+
+plt.plot(history.history['loss'], label='loss')
+plt.xlabel('Epoch')
+plt.ylabel('loss')
+plt.legend(loc='upper right')
+plt.show()
+
+
+plt.plot(history.history['f1_score'], label='f1 score')
+plt.xlabel('Epoch')
+plt.ylabel('f1 score')
+plt.legend(loc='lower right')
+ax = plt.gca()
+ax.set_ylim([0, 1])
+plt.show()
+
+
 (loss, accuracy, f1_score, precision, recall) = model.evaluate(x_test, y_test, verbose=1)
 
-print(type(loss))
+
+
+if(loss)>1.0:
+    loss_style = 'red'
+else:
+    loss_style = 'green'
+
+if(statistics.mean(history.history['accuracy']))<0.7:
+    accuracy_style = 'red'
+else:
+    accuracy_style = 'green'
+
+if(accuracy)<0.7:
+    val_accuracy_style = 'red'
+else:
+    val_accuracy_style = 'green'
+
+if(f1_score)<0.6:
+    f1_style = 'red'
+else:
+    f1_style = 'green'
+
+
 
 table = Table(title="Stats on the model")
-table.add_column("Loss", justify="right", style="green")
-table.add_column("Accuracy", style="magenta")
-table.add_column("val_accuracy", style="magenta")
-table.add_column("F1 score", justify="right", style="cyan", no_wrap=True)
-table.add_column("Precision", justify="right", style="green")
+table.add_column("Loss", justify="right", style=loss_style)
+table.add_column("Accuracy", style=accuracy_style)
+table.add_column("val_accuracy", style=val_accuracy_style)
+table.add_column("F1 score", justify="right", style=f1_style, no_wrap=True)
 
-table.add_row(str(loss), str(statistics.mean(history.history['accuracy'])),str(accuracy), str(f1_score), str(precision))
+table.add_row(str(loss), str(statistics.mean(history.history['accuracy'])),str(accuracy), str(f1_score))
+# table.add_row('0.3825118', '0.8989217643', '0.843137245', '0.745654738')
 
 console = Console()
 console.print(table)
-
 
 
 predictions = model.predict(x_test)
