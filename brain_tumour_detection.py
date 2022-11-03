@@ -19,36 +19,19 @@ from rich.console import Console
 from rich.table import Table
 from keras import backend as K
 
+from validation import *
+from models import *
+from metrics import *
+from collect_data import *
+
 
 ## ACQUIRING DATA ##
 
-labels = ['yes', 'no']
-img_size = 224
-
-#function to acquire data and its labels
-def get_data(data_dir):
-    data = [] 
-    for label in labels: 
-        path = os.path.join(data_dir, label)
-        class_num = labels.index(label)
-        
-        for img in os.listdir(path):
-            try:
-                #convert BGR to RGB format
-                img_arr = cv2.imread(os.path.join(path, img))[...,::-1] 
-                # Reshaping images to preferred size
-                resized_arr = cv2.resize(img_arr, (img_size, img_size))
-                data.append([resized_arr, class_num])
-                # randomize and shuffle data
-                random.shuffle(data)
-            except Exception as e:
-                print(e)
-    
-    return np.asanyarray(data)
-
+image_labels = ['yes', 'no']
+image_size = 224
 
 #get the image data from the brain_tumor_dataset
-all_data = get_data('COS513_Project/brain_tumor_dataset/')
+all_data = get_data('COS513_Project/brain_tumor_dataset/', image_labels, image_size)
 
 x_data = []
 y_data = []
@@ -63,7 +46,7 @@ for x in all_data:
     Y_Data = np.asarray(y_data)
 
     # reshape x_Data and y_Data
-    X_Data = X_Data.reshape(-1, img_size, img_size,3)
+    X_Data = X_Data.reshape(-1, image_size, image_size,3)
     Y_Data = Y_Data.reshape(-1, 1)
 
 
@@ -84,8 +67,6 @@ X_Data, mean, std =   standardize(X_Data)
 #perform colour scaling to the image data (grey scale)
 X_Data = tf.image.rgb_to_grayscale(X_Data)
 
-# print(X_Data.shape)
-# print(Y_Data.shape)
 
 #counting the data per classification label
 healthy_count = 0
@@ -108,7 +89,7 @@ plt.bar(plot_labels, plot_count, color ='blue',
 plt.xlabel("Brain Status")
 plt.ylabel("No. of brain MRI images")
 plt.title("Brain MRI images count comparison")
-plt.show()
+# plt.show()
 
 
 #plot the image data and its labels
@@ -123,7 +104,7 @@ def plot_multi(i):
         plt.axis('off')
     plt.show()
 
-plot_multi(190)
+# plot_multi(190)
 
 
 ## DIVIDE DATA PHASE ##
@@ -138,60 +119,21 @@ y_train = Y_Data[:num_train_images]
 x_test = X_Data[num_train_images:] 
 y_test = Y_Data[num_train_images:] 
 
-# print(x_train.shape)
-# print(y_train.shape)
-# print(x_test.shape)
-# print(y_test.shape)
 
 
 ## MODEL BUILDING PHASE ##
 
-#recall calculation function
-def recall(y_true, y_pred):
-    y_true = K.ones_like(y_true) 
-    true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
-    all_positives = K.sum(K.round(K.clip(y_true, 0, 1)))
-    
-    recall_m = true_positives / (all_positives + K.epsilon())
-    return recall_m
+#creating the models 
+model_1 = model1()
 
-#precision calculation function
-def precision(y_true, y_pred):
-    y_true = K.ones_like(y_true) 
-    true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
-    
-    predicted_positives = K.sum(K.round(K.clip(y_pred, 0, 1)))
-    precision_m = true_positives / (predicted_positives + K.epsilon())
-    return precision_m
+model_2 = model2()
 
-#f1 score calculation function
-def f1_score(y_true, y_pred):
-    precision_m = precision(y_true, y_pred)
-    recall_m = recall(y_true, y_pred)
-    return 2*((precision_m*recall_m)/(precision_m+recall_m+K.epsilon()))
+model_3 = model3()
 
-#creating the sequential model layers
-model = models.Sequential()
-model.add(layers.Conv2D(64, (3, 3), padding = 'SAME', activation='relu', input_shape=(224, 224, 1)))
-model.add(layers.MaxPooling2D((2, 2)))
-model.add(tf.keras.layers.Dropout(0.15))
-model.add(layers.Conv2D(64, (3, 3), padding = 'SAME', activation='relu'))
-model.add(layers.MaxPooling2D((2, 2)))
-model.add(tf.keras.layers.Dropout(0.15))
-model.add(layers.Conv2D(64, (3, 3), padding = 'SAME', activation='relu'))
-model.add(layers.MaxPooling2D((2, 2)))
+model_4 = model4()
 
-#flatten the layers
-model.add(layers.Flatten())
-model.add(layers.Dense(10, activation='softmax'))
+model_5 = model5()
 
-#compile and set the performance metrics of the model
-model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
-              loss=tf.keras.losses.SparseCategoricalCrossentropy(),
-              metrics=['accuracy', metrics.categorical_accuracy, metrics.mean_absolute_error,f1_score ])
-
-
-model.summary()
 
 ## TRAINING PHASE ##
 
@@ -199,77 +141,37 @@ model.summary()
 validation_data_ = (x_test, y_test)
 
 #training model with the train test set                
-history = model.fit(x_train, y_train, epochs=25, batch_size=40, 
+history_1 = model_1.fit(x_train, y_train, epochs=25, batch_size=40, 
                     validation_data=validation_data_)
 
+history_2 = model_2.fit(x_train, y_train, epochs=25, batch_size=40, 
+                    validation_data=validation_data_)
 
+history_3 = model_3.fit(x_train, y_train, epochs=25, batch_size=40, 
+                    validation_data=validation_data_)
+
+history_4 = model_4.fit(x_train, y_train, epochs=25, batch_size=40, 
+                    validation_data=validation_data_)
+
+history_5 = model_5.fit(x_train, y_train, epochs=25, batch_size=40, 
+                    validation_data=validation_data_)
 
 ## VALIDATION PHASE ##
 
-#plotting the accuracy per epoch
-plt.plot(history.history['accuracy'], label='accuracy')
-plt.plot(history.history['val_accuracy'], label = 'val_accuracy')
-plt.xlabel('Epoch')
-plt.ylabel('Accuracy')
-plt.legend(loc='lower right')
-plt.show()
+validate_model(x_test, y_test, model_1, history_1) #chosen one
 
-#plotting the loss per epoch
-plt.plot(history.history['loss'], label='loss')
-plt.xlabel('Epoch')
-plt.ylabel('loss')
-plt.legend(loc='upper right')
-plt.show()
+validate_model(x_test, y_test, model_2, history_2) #less layers
 
-# getting the evaluation metrics for the used model
-(loss, accuracy, f1_score, precision, recall) = model.evaluate(x_test, y_test, verbose=1)
+validate_model(x_test, y_test, model_3, history_3) #more convolution filters
+
+validate_model(x_test, y_test, model_4, history_4) #less convolution filters
+
+validate_model(x_test, y_test, model_5, history_5) #even less layers
 
 
-#creating styles for the table, red for a bad performance metric value and green for a good performance metric value
-if(loss)>1.0:
-    loss_style = 'red'
-else:
-    loss_style = 'green'
-
-if(statistics.mean(history.history['accuracy']))<0.7:
-    accuracy_style = 'red'
-else:
-    accuracy_style = 'green'
-
-if(accuracy)<0.7:
-    val_accuracy_style = 'red'
-else:
-    val_accuracy_style = 'green'
-
-if(f1_score)<0.6:
-    f1_style = 'red'
-else:
-    f1_style = 'green'
-
-# creating the model Statistics table
-table = Table(title="Stats on the model")
-table.add_column("Loss", justify="right", style=loss_style)
-table.add_column("Accuracy", style=accuracy_style)
-table.add_column("val_accuracy", style=val_accuracy_style)
-table.add_column("F1 score", justify="right", style=f1_style, no_wrap=True)
-table.add_row(str(loss), str(statistics.mean(history.history['accuracy'])),str(accuracy), str(f1_score))
-console = Console()
-console.print(table)
-
-# Plot a random sample of 15 test images, their predicted labels and ground truth
-classname = ['Tumor','Healthy']
-predictions = model.predict(x_test)
-predictions_index = np.argmax(predictions, axis=1) 
-predictions_index
-figure = plt.figure(figsize=(20, 20))
-for i, index in enumerate(np.random.choice(x_test.shape[0], size=15, replace=False)):
-    ax = figure.add_subplot(3, 5, i + 1, xticks=[], yticks=[])
-    predict_index = np.argmax(predictions[index])
-    true_index = y_test[index][0]
-    # Set the title for each image
-    ax.set_title("P: {} (R: {})".format(classname[predict_index], 
-                                  classname[true_index]),
-                                  color=("green" if predict_index == true_index else "red"))
-    # Display each image
-    ax.imshow(np.squeeze(x_test[index]), cmap = 'turbo')
-plt.show()
+#2, 5, 5, 3
+#2, 5, 3, 3
+#4, 5, 1, 5
+#4, 5, 2, 2
+#1, 5, 1, 1
+#2, 2, 2, 3
