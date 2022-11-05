@@ -53,6 +53,24 @@ To assess the model performance, different measures can be used. Mos of these pe
 - Accuracy
 - F1 score
 
+## Model Assessment
+
+Taking into account different layers, different types of models were created and assessed in order to find the best model parameters to use. Together with the performance metrics, the models are tweaked until the best performance is found. 
+
+For this project five different models were assessed:
+
+- Model 1 - model presented earlier, considered to be the initial model (3 convolution layers, 3 pooling layers, 2 dropout layers)
+- Model 2 - based on the first model, reducing its number of layers (2 convolution layers, 2 pooling layers, 1 dropout layer)
+- Model 3 - based on the first model, increasing the number of convolution filters (from 64 to 86)
+- Model 4 - based on the first model, decreasing the number of convolution filters (from 64 to 36)
+- Model 5 - based on the second model, reducing its number of layers even more (1 convolution layer, 1 pooling layer)
+
+
+By running the process several times it’s possible to identify which model returns the best performance metrics overall.
+
+ In this case the model that has higher performance metrics (lowest value of Loss, highest value of accuracy, highest value of F1 score) is Model 2, which is Model 1 considering less layers.
+
+
 ## Results
 
 The created model is successful in classifying a random brain MRI image as healthy or tumorous returning good performance and evaluation metrics, as you can see below in the model statistics table

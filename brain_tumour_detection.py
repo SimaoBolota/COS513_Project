@@ -1,24 +1,6 @@
 import matplotlib.pyplot as plt
-import seaborn as sns
-import keras
-from keras.models import Sequential
-from keras.layers import Dense, Conv2D , MaxPool2D , Flatten , Dropout 
-from keras.preprocessing.image import ImageDataGenerator
-from keras.optimizers import RMSprop,SGD,Adam
-from keras import datasets, layers, models
-from keras import metrics
-import statistics
 import tensorflow as tf
-import cv2
-import os
 import numpy as np
-import random
-from sklearn.model_selection import train_test_split
-import pdb
-from rich.console import Console
-from rich.table import Table
-from keras import backend as K
-
 from validation import *
 from models import *
 from metrics import *
@@ -89,7 +71,7 @@ plt.bar(plot_labels, plot_count, color ='blue',
 plt.xlabel("Brain Status")
 plt.ylabel("No. of brain MRI images")
 plt.title("Brain MRI images count comparison")
-# plt.show()
+plt.show()
 
 
 #plot the image data and its labels
@@ -104,7 +86,7 @@ def plot_multi(i):
         plt.axis('off')
     plt.show()
 
-# plot_multi(190)
+plot_multi(190)
 
 
 ## DIVIDE DATA PHASE ##
@@ -158,20 +140,13 @@ history_5 = model_5.fit(x_train, y_train, epochs=25, batch_size=40,
 
 ## VALIDATION PHASE ##
 
-validate_model(x_test, y_test, model_1, history_1) #chosen one
+validate_model(x_test, y_test, model_1, history_1) #initial option
 
-validate_model(x_test, y_test, model_2, history_2) #less layers
+validate_model(x_test, y_test, model_2, history_2) #model 1 with less layers
 
-validate_model(x_test, y_test, model_3, history_3) #more convolution filters
+validate_model(x_test, y_test, model_3, history_3) #model 1 with more convolution filters
 
-validate_model(x_test, y_test, model_4, history_4) #less convolution filters
+validate_model(x_test, y_test, model_4, history_4) #model 1 with less convolution filters
 
-validate_model(x_test, y_test, model_5, history_5) #even less layers
+validate_model(x_test, y_test, model_5, history_5) #model 2 with even less layers
 
-
-#2, 5, 5, 3
-#2, 5, 3, 3
-#4, 5, 1, 5
-#4, 5, 2, 2
-#1, 5, 1, 1
-#2, 2, 2, 3
