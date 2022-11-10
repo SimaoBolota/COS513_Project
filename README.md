@@ -2,6 +2,7 @@
 
 Project created for COS513 - Computational Intelligent Systems
 
+Run ```brain_tumor_detection.py``` to run code
 
 ## Dataset
 
